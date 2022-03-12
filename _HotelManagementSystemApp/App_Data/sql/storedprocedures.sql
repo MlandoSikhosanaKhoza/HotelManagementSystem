@@ -1,0 +1,488 @@
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+/**
+ * Author:  Mlando Sikhosana Khoza
+ * Created: 12 Dec 2019
+ */
+
+DELIMITER //
+CREATE PROCEDURE SIGNUP(IN _firstname VARCHAR(50),_lastname VARCHAR(50),_email VARCHAR(150),_username VARCHAR(50),_password VARCHAR(256))
+BEGIN
+    DECLARE _count_username INT DEFAULT 0;
+    DECLARE _count_email INT DEFAULT 0;
+    DECLARE _account_id INT;
+    SET _count_username = 
+        (SELECT COUNT(*) FROM ACCOUNT A 
+            WHERE A.USERNAME=LOWER(_username));
+    SET _count_email = 
+        (SELECT COUNT(*) FROM ACCOUNT_DETAIL AD 
+            WHERE AD.DETAIL_NAME='email' AND AD.DETAIL_VALUE=LOWER(_email));
+    IF _count_username=0 AND _count_email=0 THEN
+        INSERT INTO ACCOUNT (USERNAME,PASSWORD) VALUES (LOWER(_username),_password);
+        SET _account_id = (SELECT ACCOUNT_ID FROM ACCOUNT WHERE USERNAME=LOWER(_username));
+        INSERT INTO ACCOUNT_DETAIL(DETAIL_NAME,DETAIL_VALUE,ACCOUNT_ID) 
+            VALUES ('firstname',_firstname,_account_id);
+        INSERT INTO ACCOUNT_DETAIL(DETAIL_NAME,DETAIL_VALUE,ACCOUNT_ID) 
+            VALUES ('lastname',_lastname,_account_id);
+        INSERT INTO ACCOUNT_DETAIL(DETAIL_NAME,DETAIL_VALUE,ACCOUNT_ID) 
+            VALUES ('email',_email,_account_id);
+    END IF;
+END //
+DELIMITER ;
+/* 
+ * Login query that h
+ */
+
+DELIMITER //
+CREATE PROCEDURE LOGIN_QUERY (IN _username VARCHAR(50),_password VARCHAR(256))
+BEGIN 
+    SELECT A.`ACCOUNT_ID`,A.`USERNAME`,A.`PASSWORD`,AD.`ACCOUNT_DETAIL_ID`,AD.`DETAIL_NAME`,AD.`DETAIL_VALUE` FROM ACCOUNT A
+        JOIN ACCOUNT_DETAIL AD
+        ON AD.`ACCOUNT_ID`=A.`ACCOUNT_ID`
+        WHERE A.`USERNAME`=LOWER(_username) AND A.`PASSWORD`=_password;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE ADD_ACCOUNT_COOKIE(IN _uid VARCHAR(256),_start_date DATETIME,_expiry_date DATETIME,_account_id INT)
+BEGIN 
+    INSERT INTO ACCOUNT_COOKIE (UID,START_DATE,EXPIRY_DATE,ACCOUNT_ID) VALUES (_uid,_start_date,_expiry_date,_account_id);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE COOKIE_QUERY(IN _account_id INT,_uid VARCHAR(256))
+BEGIN
+    SELECT * FROM ACCOUNT_COOKIE AC
+        WHERE AC.ACCOUNT_ID=_account_id AND AC.`UID`=_uid;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ACCOUNT_QUERY(IN _username VARCHAR(100))
+BEGIN
+    SELECT * FROM ACCOUNT A
+        WHERE A.`USERNAME`=LOWER(_username);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SIGNUP_ADMIN(IN _firstname VARCHAR(50),_lastname VARCHAR(50),_email VARCHAR(150),_username VARCHAR(50),_password VARCHAR(256))
+BEGIN
+    DECLARE _count_username INT DEFAULT 0;
+    DECLARE _count_email INT DEFAULT 0;
+    DECLARE _admin_id INT;
+    SET _count_username = 
+        (SELECT COUNT(*) FROM `ADMIN` A 
+            WHERE A.USERNAME=LOWER(_username));
+    SET _count_email = 
+        (SELECT COUNT(*) FROM ADMIN_DETAIL AD 
+            WHERE AD.DETAIL_NAME='email' AND AD.DETAIL_VALUE=LOWER(_email));
+    IF _count_username=0 AND _count_email=0 THEN
+        INSERT INTO `ADMIN` (USERNAME,PASSWORD) VALUES (LOWER(_username),_password);
+        SET _admin_id = (SELECT ADMIN_ID FROM `ADMIN` WHERE USERNAME=LOWER(_username));
+        INSERT INTO ADMIN_DETAIL(DETAIL_NAME,DETAIL_VALUE,ADMIN_ID) 
+            VALUES ('firstname',_firstname,_admin_id);
+        INSERT INTO ADMIN_DETAIL(DETAIL_NAME,DETAIL_VALUE,ADMIN_ID) 
+            VALUES ('lastname',_lastname,_admin_id);
+        INSERT INTO ADMIN_DETAIL(DETAIL_NAME,DETAIL_VALUE,ADMIN_ID) 
+            VALUES ('email',_email,_admin_id);
+    END IF;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ADMIN_QUERY (IN _username VARCHAR(50),_password VARCHAR(256))
+BEGIN 
+    SELECT A.`ADMIN_ID`,A.`USERNAME`,A.`PASSWORD`,AD.`ADMIN_DETAIL_ID`,AD.`DETAIL_NAME`,AD.`DETAIL_VALUE` FROM `ADMIN` A
+        JOIN ADMIN_DETAIL AD
+        ON AD.`ADMIN_ID`=A.`ADMIN_ID`
+        WHERE A.`USERNAME`=LOWER(_username) AND A.`PASSWORD`=_password;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ADD_ADMIN_COOKIE(IN _uid VARCHAR(256),_start_date DATETIME,_expiry_date DATETIME,_admin_id INT)
+BEGIN 
+    INSERT INTO ADMIN_COOKIE (UID,START_DATE,EXPIRY_DATE,ADMIN_ID) VALUES (_uid,_start_date,_expiry_date,_admin_id);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ADMIN_COOKIE_QUERY(IN _admin_id INT,_uid VARCHAR(256))
+BEGIN
+    SELECT * FROM ADMIN_COOKIE AC
+        WHERE AC.ADMIN_ID=_admin_id AND AC.`UID`=_uid;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_USER_ADMIN_QUERY(IN _username VARCHAR(100))
+BEGIN
+    SELECT * FROM ADMIN A
+        WHERE A.`USERNAME`=LOWER(_username);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SIGNUP_COMPANY(IN _company_name VARCHAR(100),_address VARCHAR(200),_city VARCHAR(100),_postalcode VARCHAR(10),_email VARCHAR(150),_username VARCHAR(50),_password VARCHAR(256),_admin_id INT)
+BEGIN
+    DECLARE _count_username INT DEFAULT 0;
+    DECLARE _count_email INT DEFAULT 0;
+    DECLARE _company_id INT;
+    SET _count_username = 
+        (SELECT COUNT(*) FROM `COMPANY` A 
+            WHERE A.USERNAME=LOWER(_username));
+    SET _count_email = 
+        (SELECT COUNT(*) FROM COMPANY_DETAIL AD 
+            WHERE AD.DETAIL_NAME='email' AND AD.DETAIL_VALUE=LOWER(_email));
+    IF _count_username=0 AND _count_email=0 THEN
+        INSERT INTO `COMPANY` (USERNAME,PASSWORD,ADMIN_ID) VALUES (LOWER(_username),_password,_admin_id);
+        SET _company_id = (SELECT COMPANY_ID FROM `COMPANY` WHERE USERNAME=LOWER(_username));
+        INSERT INTO COMPANY_DETAIL(DETAIL_NAME,DETAIL_VALUE,COMPANY_ID) 
+            VALUES ('companyname',_company_name,_company_id);
+        INSERT INTO COMPANY_DETAIL(DETAIL_NAME,DETAIL_VALUE,COMPANY_ID) 
+            VALUES ('address',_address,_company_id);
+        INSERT INTO COMPANY_DETAIL(DETAIL_NAME,DETAIL_VALUE,COMPANY_ID) 
+            VALUES ('city',_city,_company_id);
+        INSERT INTO COMPANY_DETAIL(DETAIL_NAME,DETAIL_VALUE,COMPANY_ID) 
+            VALUES ('postalcode',_postalcode,_company_id);
+        INSERT INTO COMPANY_DETAIL(DETAIL_NAME,DETAIL_VALUE,COMPANY_ID) 
+            VALUES ('email',_email,_company_id);
+    END IF;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE COMPANY_QUERY (IN _username VARCHAR(50),_password VARCHAR(256))
+BEGIN 
+    SELECT A.`COMPANY_ID`,A.`USERNAME`,A.`PASSWORD`,AD.`COMPANY_DETAIL_ID`,AD.`DETAIL_NAME`,AD.`DETAIL_VALUE` FROM `COMPANY` A
+        JOIN COMPANY_DETAIL AD
+        ON AD.`COMPANY_ID`=A.`COMPANY_ID`
+        WHERE A.`USERNAME`=LOWER(_username) AND A.`PASSWORD`=_password;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_COMPANY_ALL()
+BEGIN
+    SELECT C.*,CD.`DETAIL_VALUE` AS COMPANYNAME FROM COMPANY C 
+        JOIN COMPANY_DETAIL CD
+        ON CD.`COMPANY_ID`=C.`COMPANY_ID`
+        WHERE CD.`DETAIL_NAME`='companyname';
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SHOW_AVAILABLE_ROOMS(IN _room_type_id INT,_start_date DATETIME,_end_date DATETIME)
+BEGIN
+    SELECT * FROM ROOM_NUM RN
+    WHERE RN.`ROOM_TYPE_ID`=_room_type_id AND RN.`ROOM_NUM_ID` NOT IN 
+    (SELECT AR.`ROOM_NUM_ID` FROM ACCOUNT_ROOM AR 
+    WHERE (AR.`START_DATE` BETWEEN 
+    _start_date AND _end_date)
+    OR (AR.`EXPIRY_DATE` BETWEEN 
+    _start_date AND _end_date)
+    OR (_start_date BETWEEN AR.`START_DATE` AND AR.`EXPIRY_DATE`)
+    OR (_end_date BETWEEN AR.`START_DATE` AND AR.`EXPIRY_DATE`));
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE BOOK_A_ROOM(IN _room_num_id INT,_account_id INT,
+    _start_date DATETIME,_end_date DATETIME, _num_people INT)
+BEGIN
+    DECLARE _day_btw_dates INT;
+    DECLARE _room_type_price DECIMAL(10,2);
+    DECLARE _total_price DECIMAL(10,2);
+    SET _day_btw_dates = DATEDIFF(_end_date,_start_date);
+    SET _room_type_price = (SELECT RT.PRICE FROM ROOM_NUM RN 
+                                JOIN ROOM_TYPE RT
+                                ON RN.ROOM_TYPE_ID=RT.ROOM_TYPE_ID
+                                WHERE RN.ROOM_NUM_ID=_room_num_id);
+    SET _total_price = _day_btw_dates * _room_type_price;
+    INSERT INTO ACCOUNT_ROOM (ROOM_NUM_ID,ACCOUNT_ID,START_DATE,EXPIRY_DATE,NUM_PEOPLE,PRICE)
+        VALUES (_room_num_id,_account_id,_start_date,_end_date,_num_people,_total_price);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GET_SERVICES_FOR_COMPANY(IN _company_id INT)
+BEGIN
+    SELECT * FROM SERVICES
+        WHERE COMPANY_ID=_company_id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GET_SERVICES(IN _company_id INT)
+BEGIN
+    SELECT * FROM SERVICE S
+        JOIN CATEGORY C
+        ON S.`CATEGORY_ID`=C.`CATEGORY_ID`
+        WHERE S.`COMPANY_ID`=_company_id OR C.`COMPANY_ID`=_company_id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE INSERT_SERVICE(IN _category_id INT,_service_name VARCHAR(300), _description VARCHAR(700), _price DECIMAL(10,2),_company_id INT)
+BEGIN
+    DECLARE _count INT;
+    SET _count= (SELECT COUNT(*) FROM SERVICE S WHERE S.SERVICE_NAME=_service_name);
+    IF _count=0 THEN
+        INSERT INTO SERVICE(CATEGORY_ID,SERVICE_NAME,DESCRIPTION,PRICE,COMPANY_ID)
+            VALUES (_category_id,_service_name,_description,_price,_company_id);
+    END IF;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE INSERT_CATEGORY
+(IN _category_name VARCHAR(100),_company_id INT)
+BEGIN
+    DECLARE _count INT;
+    SET _count = (SELECT COUNT(*) FROM CATEGORY C WHERE C.CATEGORY_NAME=LOWER(_category_name) AND C.COMPANY_ID=_company_id);
+    IF _count=0 THEN
+        INSERT INTO CATEGORY(CATEGORY_NAME,COMPANY_ID)
+            VALUES (LOWER(_category_name),_company_id);
+    END IF;
+    
+END // 
+DELIMITER ; 
+
+DELIMITER //
+CREATE PROCEDURE GET_CATEGORIES(IN _company_id INT)
+BEGIN
+    SELECT * FROM CATEGORY C
+        WHERE C.`COMPANY_ID`=_company_id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE TOGGLE_EMPLOYEE_SERVICE(IN _service_id INT,_employee_id INT)
+BEGIN
+    DECLARE _count INT;
+    SET _count = (SELECT COUNT(*) FROM EMPLOYEE_SERVICE ES WHERE ES.SERVICE_ID=_service_id AND ES.EMPLOYEE_ID=_employee_id);
+    IF _count=0 THEN
+        INSERT INTO EMPLOYEE_SERVICE (SERVICE_ID,EMPLOYEE_ID) VALUES(_service_id,_employee_id);
+    ELSE
+        DELETE FROM EMPLOYEE_SERVICE WHERE SERVICE_ID=_service_id AND EMPLOYEE_ID=_employee_id;
+    END IF;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SIGNUP_EMPLOYEE(IN _firstname VARCHAR(50),_lastname VARCHAR(50),_email VARCHAR(150),_username VARCHAR(50),_password VARCHAR(256),_company_id INT)
+BEGIN
+    DECLARE _count_username INT DEFAULT 0;
+    DECLARE _count_email INT DEFAULT 0;
+    DECLARE _employee_id INT;
+    SET _count_username = 
+        (SELECT COUNT(*) FROM `EMPLOYEE` A 
+            WHERE A.USERNAME=LOWER(_username));
+    SET _count_email = 
+        (SELECT COUNT(*) FROM EMPLOYEE_DETAIL AD 
+            WHERE AD.DETAIL_NAME='email' AND AD.DETAIL_VALUE=LOWER(_email));
+    IF _count_username=0 AND _count_email=0 THEN
+        INSERT INTO `EMPLOYEE` (USERNAME,PASSWORD,COMPANY_ID) VALUES (LOWER(_username),_password,_company_id);
+        SET _employee_id = (SELECT EMPLOYEE_ID FROM `EMPLOYEE` WHERE USERNAME=LOWER(_username));
+        INSERT INTO EMPLOYEE_DETAIL(DETAIL_NAME,DETAIL_VALUE,EMPLOYEE_ID) 
+            VALUES ('firstname',_firstname,_employee_id);
+        INSERT INTO EMPLOYEE_DETAIL(DETAIL_NAME,DETAIL_VALUE,EMPLOYEE_ID) 
+            VALUES ('lastname',_lastname,_employee_id);
+        INSERT INTO EMPLOYEE_DETAIL(DETAIL_NAME,DETAIL_VALUE,EMPLOYEE_ID) 
+            VALUES ('fullname',CONCAT(_firstname,' ',_lastname),_employee_id);
+        INSERT INTO EMPLOYEE_DETAIL(DETAIL_NAME,DETAIL_VALUE,EMPLOYEE_ID) 
+            VALUES ('email',_email,_employee_id);
+    END IF;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE LOGIN_EMPLOYEE_QUERY (IN _username VARCHAR(50),_password VARCHAR(256))
+BEGIN 
+    SELECT * FROM `EMPLOYEE` A
+        JOIN EMPLOYEE_DETAIL AD
+        ON AD.`EMPLOYEE_ID`=A.`EMPLOYEE_ID`
+        WHERE A.`USERNAME`=LOWER(_username) AND A.`PASSWORD`=_password;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ADD_EMPLOYEE_COOKIE(IN _uid VARCHAR(256),_start_date DATETIME,_expiry_date DATETIME,_employee_id INT)
+BEGIN 
+    INSERT INTO EMPLOYEE_COOKIE (UID,START_DATE,EXPIRY_DATE,EMPLOYEE_ID) VALUES (_uid,_start_date,_expiry_date,_employee_id);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE EMPLOYEE_COOKIE_QUERY(IN _employee_id INT,_uid VARCHAR(256))
+BEGIN
+    SELECT * FROM EMPLOYEE_COOKIE EC
+        WHERE EC.EMPLOYEE_ID=_employee_id AND EC.`UID`=_uid;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_USER_EMPLOYEE_QUERY(IN _username VARCHAR(100))
+BEGIN
+    SELECT * FROM EMPLOYEE E
+        WHERE E.`USERNAME`=LOWER(_username);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_EMPLOYEE_FOR_COMPANY(IN _company_id INT)
+BEGIN
+    SELECT E.`EMPLOYEE_ID`,ED.`DETAIL_VALUE` AS FULLNAME FROM EMPLOYEE E
+        JOIN EMPLOYEE_DETAIL ED
+        ON E.`EMPLOYEE_ID`=ED.`EMPLOYEE_ID`
+        WHERE E.`COMPANY_ID`=_company_id AND ED.`DETAIL_NAME`='fullname';
+END //
+DELIMITER ;
+
+
+
+DELIMITER //
+CREATE PROCEDURE ADD_COMPANY_COOKIE(IN _uid VARCHAR(256),_start_date DATETIME,_expiry_date DATETIME,_company_id INT)
+BEGIN 
+    INSERT INTO COMPANY_COOKIE (UID,START_DATE,EXPIRY_DATE,COMPANY_ID) VALUES (_uid,_start_date,_expiry_date,_company_id);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE COMPANY_COOKIE_QUERY(IN _company_id INT,_uid VARCHAR(256))
+BEGIN
+    SELECT * FROM COMPANY_COOKIE AC
+        WHERE AC.COMPANY_ID=_company_id AND AC.`UID`=_uid;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_USER_COMPANY_QUERY(IN _username VARCHAR(100))
+BEGIN
+    SELECT * FROM COMPANY A
+        WHERE A.`USERNAME`=LOWER(_username);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_COMPANY_LIST(IN _admin_id INT)
+BEGIN
+    SELECT C.*,CD.`DETAIL_VALUE` AS COMPANYNAME FROM COMPANY C 
+        JOIN COMPANY_DETAIL CD
+        ON CD.`COMPANY_ID`=C.`COMPANY_ID`
+        WHERE C.`ADMIN_ID`=_admin_id AND CD.`DETAIL_NAME`='companyname';
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GET_COMPANY_DETAIL(IN _company_id INT,_detail_name VARCHAR(100))
+BEGIN
+    SELECT * FROM COMPANY_DETAIL CD 
+        WHERE CD.`COMPANY_ID`=_company_id AND CD.`DETAIL_NAME`=_detail_name;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GET_COMPANY_DETAILS(IN _company_id INT)
+BEGIN
+    SELECT * FROM COMPANY_DETAIL CD WHERE CD.COMPANY_ID=_company_id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE INSERT_ROOM_TYPE(IN _room_name VARCHAR(100),_price DECIMAL(10,2),_company_id INT)
+BEGIN
+    DECLARE _count INT;
+    SET _count = (SELECT COUNT(*) FROM ROOM_TYPE RT WHERE RT.ROOM_NAME=LOWER(_room_name) AND RT.COMPANY_ID=_company_id);
+    IF _count=0 THEN
+        INSERT INTO ROOM_TYPE (ROOM_NAME,PRICE,COMPANY_ID) VALUES (_room_name,_price,_company_id);
+    END IF;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE INSERT_ROOM_NUM
+(IN _room_num INT,_room_type_id INT,_company_id INT)
+BEGIN
+    DECLARE _count INT;
+    SET _count = (SELECT COUNT(*) 
+        FROM ROOM_NUM RN JOIN ROOM_TYPE RT
+        ON RN.ROOM_TYPE_ID=RT.ROOM_TYPE_ID
+        WHERE RN.ROOMNUM=_room_num AND RT.COMPANY_ID=_company_id);
+    IF _count=0 THEN
+        INSERT INTO ROOM_NUM (ROOMNUM,ROOM_TYPE_ID) VALUES (_room_num,_room_type_id);
+    END IF;
+END // 
+DELIMITER ; 
+
+DELIMITER //
+CREATE PROCEDURE SELECT_ROOM_NUMS(IN _company_id INT)
+BEGIN
+    SELECT * FROM ROOM_NUM RN
+        JOIN ROOM_TYPE RT
+        ON RN.`ROOM_TYPE_ID`=RT.`ROOM_TYPE_ID`
+        WHERE RT.`COMPANY_ID`=_company_id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_ROOM_NUMS(IN _company_id INT)
+BEGIN
+    SELECT * FROM ROOM_NUM RN
+        JOIN ROOM_TYPE RT
+        ON RN.`ROOM_TYPE_ID`=RT.`ROOM_TYPE_ID`
+        WHERE RT.`COMPANY_ID`=_company_id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_ROOM_NUMS_FOR_TYPE(IN _company_id INT)
+BEGIN
+    SELECT * FROM ROOM_NUM RN
+        JOIN ROOM_TYPE RT
+        ON RN.`ROOM_TYPE_ID`=RT.`ROOM_TYPE_ID`
+        WHERE RT.`COMPANY_ID`=_company_id AND RN.`ROOM_TYPE_ID`=_room_type_id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_ROOM_TYPES(IN _company_id INT)
+BEGIN
+    SELECT * FROM ROOM_TYPE RT
+        WHERE RT.`COMPANY_ID`=_company_id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_MY_BOOKINGS(IN _account_id INT)
+BEGIN
+    SELECT *,AR.`PRICE` AS TOTAL_PRICE,RT.`PRICE` AS UNIT_PRICE FROM ACCOUNT_ROOM AR
+    JOIN ROOM_NUM R
+    ON AR.`ROOM_NUM_ID`=R.`ROOM_NUM_ID`
+    JOIN ROOM_TYPE RT
+    ON R.`ROOM_TYPE_ID`=RT.`ROOM_TYPE_ID`
+    JOIN COMPANY_DETAIL CD
+    ON CD.`COMPANY_ID`=RT.`COMPANY_ID`
+    WHERE AR.`ACCOUNT_ID`=_account_id AND CD.`DETAIL_NAME`='companyname';
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE SELECT_COMPANY_BOOKINGS(IN _company_id INT)
+BEGIN
+    SELECT *,AR.`PRICE` AS TOTAL_PRICE,RT.`PRICE` AS UNIT_PRICE FROM ACCOUNT_ROOM AR
+    JOIN ROOM_NUM R
+    ON AR.`ROOM_NUM_ID`=R.`ROOM_NUM_ID`
+    JOIN ROOM_TYPE RT
+    ON R.`ROOM_TYPE_ID`=RT.`ROOM_TYPE_ID`
+    JOIN ACCOUNT_DETAIL AD
+    ON AD.`ACCOUNT_ID`=AR.`ACCOUNT_ID`
+    WHERE RT.`COMPANY_ID`=_company_id AND AD.`DETAIL_NAME`='firstname';
+END //
+DELIMITER ;
