@@ -10,7 +10,7 @@ class Connection{
     private $DB_HOST='localhost';
     private $DB_USER='root';
     private $DB_PASSWORD='mlando';
-    private $DB_NAME='finaltesting1';
+    private $DB_NAME='database';
     protected $CONN;
     protected function getConnection() {
         $conn= mysqli_connect($this->DB_HOST, $this->DB_USER, $this->DB_PASSWORD, $this->DB_NAME);
